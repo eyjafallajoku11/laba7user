@@ -1,10 +1,14 @@
 package utility;
 
+import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.net.*;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
+import java.util.Objects;
 
+import static java.lang.System.in;
+import static java.lang.System.out;
 import static utility.Serialisation.deserialize;
 import static utility.Serialisation.serialize;
 
@@ -13,41 +17,58 @@ public class Client {
     private final static String hostName = "localhost";
     private static SocketAddress inetSocketAddress;
     private static ByteBuffer[] bufferOut;
-    private static ByteBuffer bufferIn;
-    private static int port;
-    public static void connect(int portNumber) {
+
+    public static void start(int portNumber) {
         try {
             System.out.println("попытка подключения");
-            port = portNumber;
-            inetSocketAddress = new InetSocketAddress(hostName, port);
+            inetSocketAddress = new InetSocketAddress(hostName, portNumber);
             channel = SocketChannel.open(inetSocketAddress);
             channel.configureBlocking(false);
-            System.out.println(String.format("Подключено к удаленному адресу %s по порту %d", hostName, port));
+            System.out.printf("Подключено к удаленному адресу %s по порту %d%n", hostName, portNumber);
+            run();
         } catch (IOException e) {
             try {
                 Thread.sleep(333);
             } catch (InterruptedException ex) {
                 throw new RuntimeException(ex);
             }
-            reconnect();
+            restart();
         }
     }
 
-    public static void reconnect(){
+    public static void restart(){
         System.out.println("попытка подключения");
         try {
             channel = SocketChannel.open(inetSocketAddress);
-            System.out.println(String.format("Подключено к удаленному адресу %s по порту %d", hostName, port));
-        } catch (IOException e) {
+            System.out.println("соединение восстановлено");
+            run();
+            } catch (IOException e) {
             try {
                 Thread.sleep(333);
             } catch (InterruptedException ex) {
                 throw new RuntimeException(ex);
             }
-            reconnect();
+            restart();
         }
 
     }
+
+    private static void run() {
+        while (true) {
+            out.print(": ");
+            String[] t = readLine();
+            Request request = CommandManager.execute(t[0], t[1]);
+            if (!Objects.isNull(request)) {
+                Client.sendRequest(request);
+                int[] data = Client.getAnswerData();
+                if (!Objects.isNull(data)) {
+                    Client.getAnswer(data);
+                }
+            }
+        }
+
+    }
+
     public static void sendRequest(Request request) {
 //        System.out.println("пытаемся");
         try {
@@ -67,9 +88,7 @@ public class Client {
             } catch (InterruptedException ex) {
                 throw new RuntimeException(ex);
             }
-            reconnect();
-//            System.out.println("приконектились");
-            sendRequest(request);
+            restart();
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
@@ -88,8 +107,7 @@ public class Client {
         return (new int[] {byteBufferSize,size});
     }
     public static void getAnswer(int[] bufferData){
-//        System.out.println("answer");
-        bufferIn = ByteBuffer.allocate(bufferData[0]);
+        ByteBuffer bufferIn = ByteBuffer.allocate(bufferData[0]);
         int size = bufferData[1];
         byte[] input = new byte[0];
         try {
@@ -108,8 +126,7 @@ public class Client {
             } catch (InterruptedException ex) {
                 throw new RuntimeException(ex);
             }
-            reconnect();
-            getAnswer(bufferData);
+            restart();
 //            throw new RuntimeException(e);
 
         }
@@ -131,9 +148,7 @@ public class Client {
             } catch (InterruptedException ex) {
                 throw new RuntimeException(ex);
             }
-            reconnect();
-            getAnswerData();
-//            throw new RuntimeException(e);
+            restart();
         }
         return data;
     }
@@ -149,6 +164,35 @@ public class Client {
             channel.close();
         } catch (IOException e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    public static String[] readLine() {
+        StringBuilder response = new StringBuilder();
+        String[] str_out = new String[2];
+        try {
+            BufferedInputStream Buf_in = new BufferedInputStream(in);
+            int in;
+            char inChar;
+            short t = 0;
+            do {
+                in = Buf_in.read();
+                if (in != -1) {
+                    if (in==32 || in==10){
+                        str_out[t]=response.toString();
+                        t++;
+                        response = new StringBuilder();
+                    }
+                    else {
+                        inChar = (char) in;
+                        response.append(inChar);
+                    }
+                }
+            } while ((in != -1) & (in != 10) & (t!=2));
+            return str_out;
+        } catch (IOException e) {
+            out.println("Exception: " + e.getMessage());
+            return null;
         }
     }
 }

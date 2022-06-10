@@ -20,13 +20,13 @@ public class CommandManager {
             if (commandName.equals("exit")){
                 Client.closeConnection();
                 System.exit(0);
-            } else if (commandName.equals("login")){
+            } else if (commandName.equals("login") || commandName.equals("register")){
                 String[] logpass = new String[2];
                 System.out.print("введите логин:");
                 logpass[0] = readLine(new BufferedInputStream(in));
                 System.out.print("введите пароль:");
                 logpass[1] = readLine(new BufferedInputStream(in));
-                request = new Request("login", logpass);
+                request = new Request(commandName, logpass);
             }
             else {
                 if (dataCommand.contains(commandName)) {
