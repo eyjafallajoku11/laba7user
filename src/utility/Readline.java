@@ -24,5 +24,4 @@ public class Readline {
             return null;
         }
     }
-
 }

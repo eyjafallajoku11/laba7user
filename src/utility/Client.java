@@ -1,16 +1,12 @@
 package utility;
 
-import utility.Request;
-
 import java.io.IOException;
 import java.net.*;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
-import java.util.Arrays;
-import java.util.Objects;
 
-import static utility.Serialisation2.deserialize;
-import static utility.Serialisation2.serialize;
+import static utility.Serialisation.deserialize;
+import static utility.Serialisation.serialize;
 
 public class Client {
     private static SocketChannel channel;

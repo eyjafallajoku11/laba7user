@@ -3,18 +3,25 @@ package utility;
 import java.io.*;
 
 public class Serialisation {
-    public static byte[] convertToBytes(Request pack) throws IOException {
-        try (ByteArrayOutputStream bos = new ByteArrayOutputStream();
-             ObjectOutputStream out = new ObjectOutputStream(bos)) {
-            out.writeObject(pack);
-            return bos.toByteArray();
+    public static byte[] serialize(Serializable value) {
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        try(ObjectOutputStream outputStream = new ObjectOutputStream(out)) {
+            outputStream.writeObject(value);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
-    }
-    public static Object convertFromBytes(byte[] bytes) throws IOException, ClassNotFoundException {
-        try (ByteArrayInputStream bis = new ByteArrayInputStream(bytes);
-             ObjectInputStream in = new ObjectInputStream(bis)) {
-            return in.readObject();
-        }
+
+        return out.toByteArray();
     }
 
+    public static <T extends Serializable> T deserialize(byte[] data) {
+        try(ByteArrayInputStream bis = new ByteArrayInputStream(data)) {
+            return (T) new ObjectInputStream(bis).readObject();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+    }
 }
+
