@@ -3,6 +3,6 @@ import utility.Client;
 public class Main {
 
     public static void main(String[] args) {
-        Client.start(1567);
+        Client.start(2567);
     }
 }

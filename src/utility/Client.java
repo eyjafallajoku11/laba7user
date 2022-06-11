@@ -30,7 +30,7 @@ public class Client {
             try {
                 Thread.sleep(333);
             } catch (InterruptedException ex) {
-                throw new RuntimeException(ex);
+                throw new RuntimeException(e);
             }
             restart();
         }
@@ -127,7 +127,6 @@ public class Client {
                 throw new RuntimeException(ex);
             }
             restart();
-//            throw new RuntimeException(e);
 
         }
     }
